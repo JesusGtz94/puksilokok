@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "site": "puksilokok-1e0b3",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
