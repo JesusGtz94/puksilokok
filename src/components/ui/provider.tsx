@@ -11,7 +11,11 @@ const customConfig = defineConfig({
   globalCss: {
     html: { height: "100%" },
     body: { height: "100%" },
-    "#root": { backgroundColor: colors.cream, height: "100%" },
+    "#root": {
+      backgroundColor: colors.cream,
+      height: "100%",
+      color: colors.brown,
+    },
   },
 });
 
