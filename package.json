@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting",
+    "emulators": "firebase emulators:start --import ./data --export-on-exit"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.8.1",

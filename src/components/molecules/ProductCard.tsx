@@ -33,7 +33,7 @@ export const ProductCard = ({ title, img, price, promotionPrice }: Props) => {
         </Text>
         <Flex justify={"center"} alignItems={"center"} height={"14px"}>
           <Text fontSize={[12, 16]} fontWeight={"500"}>
-            ${price}
+            ${promotionPrice ? promotionPrice : price}
           </Text>
           {promotionPrice && (
             <>
@@ -45,7 +45,7 @@ export const ProductCard = ({ title, img, price, promotionPrice }: Props) => {
                 fontSize={[12, 16]}
                 fontWeight={"500"}
               >
-                ${promotionPrice}
+                ${price}
               </Text>
             </>
           )}

@@ -1,5 +1,14 @@
 import { db } from "@/firebase";
-import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  query,
+  updateDoc,
+} from "firebase/firestore";
 import { Product } from "./types";
 
 export const createProduct = async (
@@ -19,12 +28,21 @@ export const getProduct = async (id: string): Promise<Product> => {
   return { ...data, id: snapshot.id } as Product;
 };
 
+export const getProducts = async (): Promise<Product[]> => {
+  const ref = collection(db, "products");
+  const q = query(ref, limit(10));
+  const snapshots = await getDocs(q);
+  const docs = snapshots.docs.map((snap) => ({ ...snap.data(), id: snap.id }));
+
+  return docs as Product[];
+};
+
 export const updateProduct = async (
-  product: Omit<Product, "id">,
+  fields: Partial<Omit<Product, "id">>,
   id: string
 ) => {
   const ref = doc(db, "products", id);
-  await updateDoc(ref, product);
+  await updateDoc(ref, fields);
 
-  return { ...product, id } as Product;
+  return id;
 };

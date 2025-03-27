@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
 import { GoogleAuthProvider, getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -21,9 +22,11 @@ const authProvider = new GoogleAuthProvider();
 const auth = getAuth();
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
+const storage = getStorage(app);
 
 if (isEmulating) {
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
 }
 
-export { authProvider, auth, db, analytics };
+export { authProvider, auth, db, analytics, storage };

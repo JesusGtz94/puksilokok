@@ -1,8 +1,12 @@
 import { FileUploadRoot, FileUploadTrigger } from "@/components/ui/file-upload";
 import {
+  Box,
   Button,
   Container,
   createListCollection,
+  Field,
+  Flex,
+  Heading,
   Image,
   SelectContent,
   SelectItem,
@@ -11,14 +15,18 @@ import {
   SelectTrigger,
   SelectValueText,
   SimpleGrid,
+  Spinner,
+  Text,
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
-import { HiUpload } from "react-icons/hi";
+import { HiUpload, HiXCircle } from "react-icons/hi";
 import imageCompression from "browser-image-compression";
 import * as Yup from "yup";
 import { useMemo, useState } from "react";
 import { CATEGORIES } from "@/constants/categories";
 import { CustomInput } from "@/components/atoms";
+import { toaster } from "@/components/ui/toaster";
+import { useCreateProduct } from "@/hooks/useCreateProduct";
 
 const categoriesCollection = createListCollection({
   items: Object.entries(CATEGORIES).map(([key, category]) => ({
@@ -28,10 +36,10 @@ const categoriesCollection = createListCollection({
 });
 
 const ProductSchema = Yup.object().shape({
-  title: Yup.string().required("Required"),
-  desc: Yup.string().required("Required"),
-  category: Yup.string().required("Required"),
-  subcategory: Yup.string().required("Required"),
+  title: Yup.string().required("Debes añadir un título"),
+  desc: Yup.string().required("Debes añadir una descripción"),
+  category: Yup.string().required("Debes seleccionar una categoría"),
+  subcategory: Yup.string().required("Debes seleccionar una sub-categoría"),
   price: Yup.string()
     .matches(
       /^(0|[1-9]\d*)(\.\d+)?$/,
@@ -51,15 +59,30 @@ const ProductSchema = Yup.object().shape({
 const FIELDS = [
   { name: "title", label: "Titulo", required: true },
   { name: "desc", label: "Descripción", required: true },
-  { name: "category", label: "Categoría", required: true },
-  { name: "subcategory", label: "Sub-Categoría", required: true },
   { name: "price", label: "Precio", required: true },
   { name: "promotionPrice", label: "Precio de Oferta", required: false },
 ] as const;
 
 export const CreateProductForm = () => {
+  const { mutate, isPending } = useCreateProduct({
+    onSuccess: () => {
+      toaster.success({ title: "Producto creado correctamente!" });
+      setLoadedFiles([]);
+      resetForm();
+    },
+  });
+
   const [loadedFiles, setLoadedFiles] = useState<File[]>([]);
-  const { errors, touched, handleChange, values, handleSubmit } = useFormik({
+  const [loadingImages, setLoadingImages] = useState(false);
+  const {
+    errors,
+    touched,
+    handleChange,
+    values,
+    handleSubmit,
+    setFieldValue,
+    resetForm,
+  } = useFormik({
     initialValues: {
       title: "",
       desc: "",
@@ -70,10 +93,19 @@ export const CreateProductForm = () => {
     },
     validationSchema: ProductSchema,
     validateOnBlur: true,
-    onSubmit: console.log,
+    onSubmit: (formData) => {
+      if (Number(formData.price) <= Number(formData.promotionPrice)) {
+        toaster.error({
+          title: "El precio de oferta debe ser menor al precio real.",
+        });
+      } else {
+        mutate({ ...formData, images: loadedFiles });
+      }
+    },
   });
 
-  const handleImage = async (files: File[]) => {
+  const handleAddImages = async (files: File[]) => {
+    setLoadingImages(true);
     const compressed: File[] = [];
 
     const options = {
@@ -86,134 +118,216 @@ export const CreateProductForm = () => {
     for (let i = 0; i < files.length; i++) {
       const imageFile = files[i];
       try {
-        console.log("originalFile instanceof Blob", imageFile instanceof Blob); // true
-        console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
-
         const compressedFile = await imageCompression(imageFile, options);
-        console.log(
-          "compressedFile instanceof Blob",
-          compressedFile instanceof Blob
-        ); // true
-        console.log(
-          `compressedFile size ${compressedFile.size / 1024 / 1024} MB`
-        ); // smaller than maxSizeMB
-
         compressed.push(compressedFile);
       } catch {
-        console.log("Error adding the file: ", imageFile.name);
+        toaster.error({
+          title: "Error al añadir la imagen " + imageFile.name,
+        });
         continue;
       }
     }
 
     setLoadedFiles([...loadedFiles, ...compressed]);
+    setLoadingImages(false);
+  };
+  const changeMainImage = (index: number) => {
+    const oldMain = loadedFiles[0];
+    const newMain = loadedFiles[index];
+    const loadedFilesMutable = [...loadedFiles];
+    loadedFilesMutable[0] = newMain;
+    loadedFilesMutable[index] = oldMain;
+
+    setLoadedFiles(loadedFilesMutable);
   };
 
-  const [category, setCategory] = useState<keyof typeof CATEGORIES>();
-  const [subCategory, setSubCategory] = useState<string>();
-
   const subCategoriesCollection = useMemo(() => {
-    if (!category) {
-      setSubCategory("");
+    if (!values.category) {
+      setFieldValue("subcategory", "", false);
       return createListCollection({
         items: [],
       });
     }
 
     return createListCollection({
-      items: Object.entries(CATEGORIES[category].subcategories).map(
-        ([key, category]) => ({
-          value: key,
-          label: category.name,
-        })
-      ),
+      items: Object.entries(
+        CATEGORIES[values.category as keyof typeof CATEGORIES].subcategories
+      ).map(([key, category]) => ({
+        value: key,
+        label: category.name,
+      })),
     });
-  }, [category]);
+  }, [values.category, setFieldValue]);
 
   return (
-    <Container py={4}>
+    <Container>
+      <Heading mb={6}>Añadir un producto</Heading>
       {FIELDS.map(({ name, label, required }) => (
-        <CustomInput
-          name={name}
-          label={label}
-          required={required}
-          textArea={name === "desc"}
-          value={values[name]}
-          onChange={handleChange}
-          invalid={!!errors[name] && touched[name]}
-          error={errors[name]}
-        />
+        <Box key={name} mt={2}>
+          <CustomInput
+            name={name}
+            label={label}
+            required={required}
+            textArea={name === "desc"}
+            value={values[name]}
+            onChange={handleChange}
+            invalid={!!errors[name] && touched[name]}
+            error={errors[name]}
+          />
+        </Box>
       ))}
 
+      <Flex mt={4} flexDir={["column", "column", "row"]}>
+        {/** SELECT CATEGORY */}
+        <Field.Root
+          invalid={!!errors.category && touched.category}
+          width="320px"
+          mr={[0, 0, 8]}
+          mb={[4, 4, 0]}
+        >
+          <SelectRoot
+            collection={categoriesCollection}
+            value={[values.category]}
+            onValueChange={(e) => {
+              handleChange({ target: { value: e.value[0], name: "category" } });
+            }}
+          >
+            <SelectLabel>Categoría</SelectLabel>
+            <SelectTrigger>
+              <SelectValueText placeholder="Selecciona la Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              {categoriesCollection.items.map((cat) => (
+                <SelectItem item={cat} key={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+
+            <Field.ErrorText>{errors.category}</Field.ErrorText>
+          </SelectRoot>
+        </Field.Root>
+
+        {/** SELECT SUBCATEGORY */}
+        <Field.Root
+          invalid={!!errors.subcategory && touched.subcategory}
+          width="320px"
+        >
+          <SelectRoot
+            collection={subCategoriesCollection}
+            width="320px"
+            value={[values.subcategory]}
+            onValueChange={(e) => {
+              handleChange({
+                target: { value: e.value[0], name: "subcategory" },
+              });
+            }}
+            disabled={!values.category}
+          >
+            <SelectLabel>Sub-Categoría</SelectLabel>
+            <SelectTrigger>
+              <SelectValueText placeholder="Selecciona la Sub-Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              {subCategoriesCollection.items.map((cat) => (
+                <SelectItem item={cat} key={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+
+            <Field.ErrorText>{errors.subcategory}</Field.ErrorText>
+          </SelectRoot>
+        </Field.Root>
+      </Flex>
+
       {/** FILE UPLOAD */}
-      <FileUploadRoot
-        accept={"image/*"}
-        onFileAccept={(e) => handleImage(e.files)}
-        maxFiles={8}
+      {!loadingImages ? (
+        <FileUploadRoot
+          accept={"image/*"}
+          onFileAccept={(e) => handleAddImages(e.files)}
+          maxFiles={10}
+          mt={4}
+        >
+          <FileUploadTrigger asChild>
+            <Button variant="outline" size="sm">
+              <HiUpload /> Subir Imagen
+            </Button>
+          </FileUploadTrigger>
+        </FileUploadRoot>
+      ) : (
+        <Spinner size="lg" mt={4} ml={4} />
+      )}
+      <SimpleGrid
+        columns={[2, 3, 4, 5, 6, 7]}
+        gap={4}
+        mt={8}
+        justifyItems={"center"}
       >
-        <FileUploadTrigger asChild>
-          <Button variant="outline" size="sm">
-            <HiUpload /> Subir Imagen
-          </Button>
-        </FileUploadTrigger>
-      </FileUploadRoot>
-      <SimpleGrid columns={[2, 3, 4, 5, 6, 7]} gap={4} justifyItems={"center"}>
         {loadedFiles.map((item, i) => (
-          <Image
-            src={URL.createObjectURL(item)}
+          <Flex
             key={item.name + i}
-            width={"90%"}
-            aspectRatio={"1/1"}
-            objectFit={"cover"}
-            borderRadius={"5%"}
-          />
+            position={"relative"}
+            flexDir={"column"}
+            alignItems={"center"}
+          >
+            <Box
+              color={"red.700"}
+              onClick={() =>
+                setLoadedFiles(loadedFiles.filter((_, index) => i !== index))
+              }
+              _hover={{ color: "red.800", cursor: "pointer" }}
+              display="inline-flex"
+              borderRadius="full"
+              position={"absolute"}
+              top={-4}
+              left={-2}
+            >
+              <Box
+                position={"absolute"}
+                background={"white"}
+                height={5}
+                width={5}
+                borderRadius={"full"}
+                top={2}
+                left={2}
+              />
+              <HiXCircle size={35} style={{ zIndex: 1 }} />
+            </Box>
+            <Image
+              src={URL.createObjectURL(item)}
+              width={"90%"}
+              aspectRatio={"1/1"}
+              objectFit={"cover"}
+              borderRadius={"5%"}
+              mb={2}
+            />
+            {i === 0 ? (
+              <Text textAlign={"center"}>Imagen Principal</Text>
+            ) : (
+              <Text
+                onClick={() => changeMainImage(i)}
+                _hover={{
+                  textDecor: "underline",
+                  cursor: "pointer",
+                }}
+                textAlign={"center"}
+              >
+                Priorizar
+              </Text>
+            )}
+          </Flex>
         ))}
       </SimpleGrid>
 
-      {/** SELECT CATEGORY */}
-      <SelectRoot
-        collection={categoriesCollection}
-        width="320px"
-        value={[category || ""]}
-        onValueChange={(e) =>
-          setCategory(e.value[0] as keyof typeof CATEGORIES)
-        }
+      <Button
+        loading={isPending}
+        mt={4}
+        onClick={() => handleSubmit()}
+        disabled={loadingImages}
       >
-        <SelectLabel>Categoría</SelectLabel>
-        <SelectTrigger>
-          <SelectValueText placeholder="Selecciona la Categoría" />
-        </SelectTrigger>
-        <SelectContent>
-          {categoriesCollection.items.map((cat) => (
-            <SelectItem item={cat} key={cat.value}>
-              {cat.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </SelectRoot>
-
-      {/** SELECT SUBCATEGORY */}
-      <SelectRoot
-        collection={subCategoriesCollection}
-        width="320px"
-        value={[subCategory || ""]}
-        onValueChange={(e) =>
-          setSubCategory(e.value[0] as keyof typeof CATEGORIES)
-        }
-        disabled={!category}
-      >
-        <SelectLabel>Sub-Categoría</SelectLabel>
-        <SelectTrigger>
-          <SelectValueText placeholder="Selecciona la Sub-Categoría" />
-        </SelectTrigger>
-        <SelectContent>
-          {subCategoriesCollection.items.map((cat) => (
-            <SelectItem item={cat} key={cat.value}>
-              {cat.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </SelectRoot>
-      <Button onClick={() => handleSubmit()}>Submit</Button>
+        Subir Producto
+      </Button>
     </Container>
   );
 };
