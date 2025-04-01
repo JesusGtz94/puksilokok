@@ -11,6 +11,7 @@ export type AvailableColors = {
 
 export type Product = {
   title: string;
+  titleLower: string;
   desc: string;
   id: string;
   category: string;

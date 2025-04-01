@@ -1,6 +1,10 @@
 import { useUser } from "@/hooks/useUser";
 import { Button, Flex, Image, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
+import { WhatsAppContactButton } from "../molecules";
+import { FaInstagram } from "react-icons/fa";
+import { MdOutlineAdd } from "react-icons/md";
+import { colors } from "@/theme";
 
 export const Header = () => {
   const { logout, user } = useUser();
@@ -12,13 +16,10 @@ export const Header = () => {
     goToHome();
   };
 
-  const phoneNumber = "+525547675616"; // Reemplaza con tu número
-  const message = encodeURIComponent("¡Hola! Quiero más información.");
-  const whatsappLink = `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
-
-  const handleClick = () => {
-    window.open(whatsappLink, "_blank");
+  const handleInstagram = () => {
+    window.open("https://www.instagram.com/puksilokok/", "_blank");
   };
+
   return (
     <Flex
       dir="horizontal"
@@ -28,7 +29,7 @@ export const Header = () => {
       mb={4}
     >
       <Flex
-        dir="horizontal"
+        flexDir={["column", "row"]}
         alignItems={"center"}
         onClick={goToHome}
         _hover={{ cursor: "pointer" }}
@@ -39,7 +40,12 @@ export const Header = () => {
           aspectRatio={"1/1"}
           resize={"cover"}
         />
-        <Text ml={2} fontWeight={"500"} fontSize={16}>
+        <Text
+          fontFamily={"Montserrat"}
+          ml={[2, 4]}
+          fontWeight={"500"}
+          fontSize={[15, 20]}
+        >
           Puksilokok
         </Text>
       </Flex>
@@ -47,31 +53,36 @@ export const Header = () => {
       {user ? (
         <>
           <Flex alignItems={"center"}>
+            <Button variant={"ghost"} size={"xs"} onClick={handleLogout}>
+              Cerrar sesión
+            </Button>
             <Button
-              size={"xs"}
+              borderRadius={"full"}
               onClick={() => {
                 nav("/product-form");
               }}
-              mr={4}
+              ml={[2, 4]}
+              bgColor={colors.brown}
             >
-              Product form
-            </Button>
-
-            <Text textAlign={"center"} mr={4}>
-              {user.displayName || user.email}
-            </Text>
-
-            <Button variant={"outline"} size={"xs"} onClick={handleLogout}>
-              Cerrar sesión
+              Add Product
+              <MdOutlineAdd size={18} />
             </Button>
           </Flex>
         </>
       ) : (
-        <>
-          <Button size={"xs"} onClick={handleClick}>
-            Contactar
+        <Flex alignItems={"center"}>
+          <Button
+            mr={4}
+            borderRadius={"full"}
+            p={2}
+            borderWidth={2}
+            bg={colors.brown}
+            onClick={handleInstagram}
+          >
+            <FaInstagram size={24} />
           </Button>
-        </>
+          <WhatsAppContactButton />
+        </Flex>
       )}
     </Flex>
   );

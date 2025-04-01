@@ -9,8 +9,11 @@ import { colors } from "@/theme";
 
 const customConfig = defineConfig({
   globalCss: {
-    html: { height: "100%" },
-    body: { height: "100%" },
+    html: { height: "100%", backgroundColor: colors.cream },
+    body: {
+      height: "100%",
+      backgroundColor: colors.cream,
+    },
     "#root": {
       backgroundColor: colors.cream,
       height: "100%",

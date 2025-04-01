@@ -8,7 +8,7 @@ export const useCreateProduct = (
   queryParams?: MutationOptions<
     Product,
     unknown,
-    Omit<Product, "id" | "images"> & { images: File[] }
+    Omit<Product, "id" | "images" | "titleLower"> & { images: File[] }
   >
 ) => {
   return useMutation({
@@ -17,8 +17,13 @@ export const useCreateProduct = (
       const imgUrls = await uploadImages(images, `product-images/${id}`);
 
       await updateProduct({ images: imgUrls }, id);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
-      return { ...product, images: imgUrls, id };
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.products });
+      return {
+        ...product,
+        titleLower: product.title.toLowerCase(),
+        images: imgUrls,
+        id,
+      };
     },
     ...queryParams,
   });

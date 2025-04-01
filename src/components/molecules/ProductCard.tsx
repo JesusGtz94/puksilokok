@@ -11,10 +11,14 @@ export const ProductCard = ({ title, img, price, promotionPrice }: Props) => {
     <Flex
       flexDirection={"column"}
       alignItems={"center"}
-      pt={2}
+      borderRadius={"md"}
+      borderBottomWidth={1}
+      bg={colors.cream}
+      borderColor={colors.pink}
+      py={2}
+      transition="transform 0.3s ease-in-out"
       _hover={{
-        background: colors.creamMedium,
-        borderRadius: "2%",
+        transform: "scale(1.2)",
         cursor: "pointer",
       }}
     >
@@ -23,32 +27,41 @@ export const ProductCard = ({ title, img, price, promotionPrice }: Props) => {
         width={["100%", "90%", "85%"]}
         aspectRatio={"1/1"}
         objectFit={"cover"}
-        borderRadius={"2%"}
-        shadow="3px 3px 2px 1px rgba(0, 0, 0, 0.3)"
+        borderRadius={"md"}
       />
 
-      <Box py={2}>
-        <Text textAlign={"center"} fontWeight={"bold"} fontSize={[14, 18]}>
+      <Box pt={2} ml={2} width={["100%", "90%", "85%"]}>
+        <Text
+          width={"70%"}
+          textAlign={"left"}
+          fontWeight={"bold"}
+          fontSize={[14, 16]}
+          lineClamp={2}
+          lineHeight={1.2}
+          minHeight={"2.5rem"}
+        >
           {title}
         </Text>
-        <Flex justify={"center"} alignItems={"center"} height={"14px"}>
-          <Text fontSize={[12, 16]} fontWeight={"500"}>
+
+        <Flex
+          flexDir={"column"}
+          justify={"center"}
+          alignItems={"flex-start"}
+          pt={2}
+        >
+          <Text
+            textDecor={"line-through"}
+            fontWeight={"semibold"}
+            color={"gray.400"}
+            fontSize={[10, 14]}
+            minHeight={"1.2rem"}
+          >
+            {promotionPrice ? "$" + price : ""}
+          </Text>
+
+          <Text fontSize={[12, 16]} fontWeight={"bold"}>
             ${promotionPrice ? promotionPrice : price}
           </Text>
-          {promotionPrice && (
-            <>
-              <Text fontSize={[12, 16]} mx={1}>
-                -
-              </Text>
-              <Text
-                textDecor={"line-through"}
-                fontSize={[12, 16]}
-                fontWeight={"500"}
-              >
-                ${price}
-              </Text>
-            </>
-          )}
         </Flex>
       </Box>
     </Flex>

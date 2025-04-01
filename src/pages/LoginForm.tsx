@@ -3,7 +3,7 @@ import { toaster } from "@/components/ui/toaster";
 import { auth } from "@/firebase";
 import { Button, Container, Flex, Heading, Input } from "@chakra-ui/react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router";
 
 export const LoginForm = () => {
@@ -11,7 +11,8 @@ export const LoginForm = () => {
   const [credentials, setCredentials] = useState({ email: "", pass: "" });
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = (e?: FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
     if (!credentials.email || !credentials.pass) {
       return toaster.error({
         title: "Añade usuario y contraseña",
@@ -36,31 +37,35 @@ export const LoginForm = () => {
     <Container display={"flex"} flexDir={"column"} alignItems={"center"}>
       <Flex width={["100%", "100%", "70%", "50%"]} flexDir={"column"}>
         <Heading mb={4}>Iniciar Sesión</Heading>
-        <Input
-          value={credentials.email}
-          placeholder="Email"
-          onChange={(e) =>
-            setCredentials({
-              ...credentials,
-              email: e.target.value,
-            })
-          }
-        />
-        <PasswordInput
-          value={credentials.pass}
-          my={4}
-          placeholder="Password"
-          onChange={(e) =>
-            setCredentials({
-              ...credentials,
-              pass: e.target.value,
-            })
-          }
-        />
+        <form onSubmit={handleLogin}>
+          <Input
+            value={credentials.email}
+            placeholder="Email"
+            onChange={(e) =>
+              setCredentials({
+                ...credentials,
+                email: e.target.value,
+              })
+            }
+          />
+          <Flex flexDir={"column"}>
+            <PasswordInput
+              value={credentials.pass}
+              my={4}
+              placeholder="Password"
+              onChange={(e) =>
+                setCredentials({
+                  ...credentials,
+                  pass: e.target.value,
+                })
+              }
+            />
 
-        <Button loading={loading} onClick={handleLogin}>
-          Login
-        </Button>
+            <Button loading={loading} type="submit">
+              Login
+            </Button>
+          </Flex>
+        </form>
       </Flex>
     </Container>
   );

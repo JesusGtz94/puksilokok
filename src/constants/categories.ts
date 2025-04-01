@@ -1,57 +1,43 @@
 export const CATEGORIES = {
   "000": {
-    name: "CATEGORY 000",
+    name: "Eventos",
     subcategories: {
       "000-000": {
-        name: "SUBCATEGORY 000-000",
+        name: "Baby Shower",
       },
       "000-001": {
-        name: "SUBCATEGORY 000-001",
+        name: "Bautizo",
       },
       "000-002": {
-        name: "SUBCATEGORY 000-0002",
+        name: "Primera Comunión",
+      },
+      "000-003": {
+        name: "Boda",
+      },
+      "000-004": {
+        name: "Sepelio",
       },
     },
   },
   "001": {
-    name: "CATEGORY 001",
+    name: "Temporadas",
     subcategories: {
       "001-000": {
-        name: "SUBCATEGORY 001-000",
+        name: "Día del Amor y la Amistad",
       },
       "001-001": {
-        name: "SUBCATEGORY 001-001",
-      },
-      "001-002": {
-        name: "SUBCATEGORY 001-0002",
+        name: "21 de Marzo (Flores Amarillas)",
       },
     },
   },
   "002": {
-    name: "CATEGORY 002",
+    name: "Decorativas",
     subcategories: {
       "002-000": {
-        name: "SUBCATEGORY 002-000",
+        name: "Velas Individuales",
       },
       "002-001": {
-        name: "SUBCATEGORY 002-001",
-      },
-      "002-002": {
-        name: "SUBCATEGORY 002-0002",
-      },
-    },
-  },
-  "003": {
-    name: "CATEGORY 003",
-    subcategories: {
-      "003-000": {
-        name: "SUBCATEGORY 003-000",
-      },
-      "003-001": {
-        name: "SUBCATEGORY 003-001",
-      },
-      "003-002": {
-        name: "SUBCATEGORY 003-0002",
+        name: "Paquete de Velas",
       },
     },
   },
