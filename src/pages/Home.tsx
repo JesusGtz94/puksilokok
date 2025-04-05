@@ -9,10 +9,12 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router";
 
 export const Home = () => {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useGetProducts(12);
+  const navigate = useNavigate();
 
   const ref = useOnVisible(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -32,12 +34,15 @@ export const Home = () => {
                 price={product.price}
                 promotionPrice={product.promotionPrice}
                 key={product.id}
+                onClick={() => navigate("/product/" + product.id)}
+                category={product.category}
+                subcategory={product.subcategory}
               />
             ))}
           </SimpleGrid>
         )}
         {data?.length === 0 && (
-          <Text fontWeight={"bold"} p={36} textAlign={"center"}>
+          <Text fontWeight={"bold"} pt={16} textAlign={"center"}>
             No hay productos que mostrar.
           </Text>
         )}

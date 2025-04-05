@@ -2,6 +2,7 @@ import { FileUploadRoot, FileUploadTrigger } from "@/components/ui/file-upload";
 import {
   Box,
   Button,
+  Center,
   Container,
   createListCollection,
   Field,
@@ -20,13 +21,14 @@ import {
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { HiUpload, HiXCircle } from "react-icons/hi";
-import imageCompression from "browser-image-compression";
 import * as Yup from "yup";
 import { useMemo, useState } from "react";
 import { CATEGORIES } from "@/constants/categories";
 import { CustomInput } from "@/components/atoms";
 import { toaster } from "@/components/ui/toaster";
 import { useCreateProduct } from "@/hooks/useCreateProduct";
+import { compressImage, convertFileToWebP } from "@/utils/images";
+import { colors } from "@/theme";
 
 const categoriesCollection = createListCollection({
   items: Object.entries(CATEGORIES).map(([key, category]) => ({
@@ -74,6 +76,8 @@ export const CreateProductForm = () => {
 
   const [loadedFiles, setLoadedFiles] = useState<File[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [imgProgress, setImgProgress] = useState({ current: 0, total: 0 });
+
   const {
     errors,
     touched,
@@ -108,17 +112,12 @@ export const CreateProductForm = () => {
     setLoadingImages(true);
     const compressed: File[] = [];
 
-    const options = {
-      maxSizeMB: 0.2,
-      maxWidthOrHeight: 800,
-      useWebWorker: true,
-      maxIteration: 3,
-    };
-
     for (let i = 0; i < files.length; i++) {
       const imageFile = files[i];
       try {
-        const compressedFile = await imageCompression(imageFile, options);
+        setImgProgress({ current: i + 1, total: files.length });
+        const webpImg = await convertFileToWebP(imageFile);
+        const compressedFile = await compressImage(webpImg);
         compressed.push(compressedFile);
       } catch {
         toaster.error({
@@ -256,7 +255,12 @@ export const CreateProductForm = () => {
           </FileUploadTrigger>
         </FileUploadRoot>
       ) : (
-        <Spinner size="lg" mt={4} ml={4} />
+        <Center p={8} flexDir={"column"}>
+          <Text>
+            Procesando imagen {imgProgress.current} de {imgProgress.total}...
+          </Text>
+          <Spinner size="xl" mt={4} ml={4} />
+        </Center>
       )}
       <SimpleGrid
         columns={[2, 3, 4, 5, 6, 7]}
@@ -319,15 +323,18 @@ export const CreateProductForm = () => {
           </Flex>
         ))}
       </SimpleGrid>
-
-      <Button
-        loading={isPending}
-        mt={4}
-        onClick={() => handleSubmit()}
-        disabled={loadingImages}
-      >
-        Subir Producto
-      </Button>
+      <Flex justifyContent={["center", "center", "center", "flex-start"]}>
+        <Button
+          loading={isPending}
+          mt={4}
+          onClick={() => handleSubmit()}
+          disabled={loadingImages}
+          bg={colors.brown}
+          width={["80%", "80%", "80%", "xs"]}
+        >
+          Subir Producto
+        </Button>
+      </Flex>
     </Container>
   );
 };

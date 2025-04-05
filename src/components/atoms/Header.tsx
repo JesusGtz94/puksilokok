@@ -29,7 +29,7 @@ export const Header = () => {
       mb={4}
     >
       <Flex
-        flexDir={["column", "row"]}
+        flexDir={["column", "column", "row"]}
         alignItems={"center"}
         onClick={goToHome}
         _hover={{ cursor: "pointer" }}
@@ -39,12 +39,14 @@ export const Header = () => {
           width={["40px"]}
           aspectRatio={"1/1"}
           resize={"cover"}
+          userSelect={"none"}
         />
         <Text
           fontFamily={"Montserrat"}
           ml={[2, 4]}
           fontWeight={"500"}
           fontSize={[15, 20]}
+          userSelect={"none"}
         >
           Puksilokok
         </Text>

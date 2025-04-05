@@ -7,16 +7,25 @@ type Props = {
   message?: string;
   label?: string;
   flexProps?: FlexProps;
+  xl?: boolean;
 };
 const phoneNumber = import.meta.env.VITE_CONTACT_NUMBER;
+const isMobile = /iPhone|Android|iPad|iPod/i.test(navigator.userAgent);
 
-export const WhatsAppContactButton = ({ message, label, flexProps }: Props) => {
+export const WhatsAppContactButton = ({
+  message,
+  label,
+  flexProps,
+  xl,
+}: Props) => {
   const [isHovered, setIsHovered] = useState(false);
   const encodedMessage = encodeURIComponent(
     message || "¡Hola! Quiero más información."
   );
 
-  const whatsappLink = `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+  const whatsappLink = isMobile
+    ? `https://wa.me/${phoneNumber}?text=${encodedMessage}`
+    : `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
 
   const handleClick = () => {
     window.open(whatsappLink, "_blank");
@@ -39,21 +48,28 @@ export const WhatsAppContactButton = ({ message, label, flexProps }: Props) => {
         p={2}
         borderRadius={"full"}
         zIndex={1}
+        borderWidth={label ? (xl ? 8 : 5) : undefined}
+        borderColor={colors.cream}
       >
-        <FaWhatsapp color="white" size={32} />
+        <FaWhatsapp color="white" size={xl ? 55 : 32} />
       </Box>
       {label && (
         <Box
           borderColor={colors.brown}
           borderRadius={7}
           borderWidth={1}
-          py={1}
-          pr={3}
-          pl={10}
-          ml={-9}
-          bg={isHovered ? colors.creamMedium : undefined}
+          py={2}
+          pr={5}
+          pl={"3.2rem"}
+          ml={-10}
+          bg={isHovered ? colors.darkBrown : colors.brown}
         >
-          <Text fontWeight={"bold"} userSelect={"none"}>
+          <Text
+            fontSize={xl ? 20 : 14}
+            fontWeight={"bold"}
+            userSelect={"none"}
+            color={colors.cream}
+          >
             {label}
           </Text>
         </Box>

@@ -30,10 +30,14 @@ export const createProduct = async (
   };
 };
 
-export const getProduct = async (id: string): Promise<Product> => {
+export const getProduct = async (id: string): Promise<Product | undefined> => {
   const ref = doc(db, "products", id);
   const snapshot = await getDoc(ref);
   const data = snapshot.data();
+
+  if (!data) {
+    return;
+  }
 
   return { ...data, id: snapshot.id } as Product;
 };
